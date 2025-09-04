@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Band - Sistem Kehadiran</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1a73e8 0%, #6c5ce7 100%);
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .date-display {
+            font-size: 1rem;
+            margin-top: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        
+        .attendance-form {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+        
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #0d62c9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+        }
+        
+        .message-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+        
+        .confirmation {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .confirmation i {
+            font-size: 3rem;
+            color: #1a73e8;
+            margin-bottom: 15px;
+        }
+        
+        .confirmation h3 {
+            margin-bottom: 10px;
+            color: #2d3436;
+        }
+        
+        .confirmation p {
+            color: #636e72;
+            margin-bottom: 5px;
+        }
+        
+        .back-button {
+            margin-top: 20px;
+            background-color: #636e72;
+        }
+        
+        .back-button:hover {
+            background-color: #2d3436;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-drum"></i> Absensi Band</h1>
+            <p>Sistem Pencatatan Kehadiran Latihan</p>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+        
+        <section class="attendance-form" id="formSection">
+            <h2><i class="fas fa-clipboard-check"></i> Form Absensi</h2>
+            <div class="form-group">
+                <label for="name">Nama Anggota Band:</label>
+                <input type="text" id="name" placeholder="Masukkan nama lengkap" required>
+            </div>
+            <div class="form-group">
+                <label for="class">Kelas/Instrumen:</label>
+                <select id="class" required>
+                    <option value="">Pilih kelas/instrumen</option>
+                    <option value="Gitar Utama">Gitar Utama</option>
+                    <option value="Gitar Rhythm">Gitar Rhythm</option>
+                    <option value="Bass">Bass</option>
+                    <option value="Drum">Drum</option>
+                    <option value="Keyboard">Keyboard</option>
+                    <option value="Vokal">Vokal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="date">Tanggal Kehadiran:</label>
+                <input type="date" id="date" required>
+            </div>
+            <button id="submitAttendance">
+                <i class="fas fa-paper-plane"></i> Absen Sekarang
+            </button>
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle message-icon"></i>
+                <span>Absensi berhasil dicatat!</span>
+            </div>
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle message-icon"></i>
+                <span>Terjadi kesalahan. Silakan coba lagi.</span>
+            </div>
+        </section>
+        
+        <section class="confirmation" id="confirmationSection">
+            <i class="fas fa-check-circle"></i>
+            <h3>Absensi Berhasil!</h3>
+            <p id="confirmationName"></p>
+            <p id="confirmationClass"></p>
+            <p id="confirmationDate"></p>
+            <p id="confirmationTime"></p>
+            <button class="back-button" id="backButton">
+                <i class="fas fa-arrow-left"></i> Kembali ke Form Absensi
+            </button>
+        </section>
+        
+        <footer>
+            <p>&copy; 2025 Sistem Absensi Band</p>
+        </footer>
+    </div>
+
+    <!-- Firebase App (core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // Konfigurasi Firebase - GANTI dengan konfigurasi project Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzlChP0bHJtidgKxnEkCLr9Q4qHK2xfEg",
+            authDomain: "band-cb1aa.firebaseapp.com",
+            projectId: "band-cb1aa",
+            storageBucket: "band-cb1aa.firebasestorage.app",
+            messagingSenderId: "903647081592",
+            appId: "1:903647081592:web:d3e9c873808256b4b3298d"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Fungsi untuk menampilkan tanggal dan waktu terkini
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', options);
+            
+            // Set nilai default untuk input tanggal
+            const today = now.toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+
+        // Memperbarui tanggal setiap menit
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+
+        // Fungsi untuk menyimpan data absensi ke Firebase
+        document.getElementById('submitAttendance').addEventListener('click', function() {
+            const name = document.getElementById('name').value.trim();
+            const classValue = document.getElementById('class').value;
+            const dateValue = document.getElementById('date').value;
+            
+            if (!name) {
+                showError('Nama harus diisi');
+                return;
+            }
+            
+            if (!classValue) {
+                showError('Kelas/instrumen harus dipilih');
+                return;
+            }
+            
+            if (!dateValue) {
+                showError('Tanggal kehadiran harus diisi');
+                return;
+            }
+            
+            const now = new Date();
+            const attendanceData = {
+                name: name,
+                class: classValue,
+                date: dateValue,
+                timestamp: now,
+                dateString: new Date(dateValue).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+            };
+            
+            // Menyimpan data ke Firestore
+            db.collection('attendance').add(attendanceData)
+                .then(() => {
+                    // Tampilkan konfirmasi
+                    document.getElementById('confirmationName').textContent = "Nama: " + name;
+                    document.getElementById('confirmationClass').textContent = "Kelas: " + classValue;
+                    document.getElementById('confirmationDate').textContent = "Tanggal: " + attendanceData.dateString;
+                    document.getElementById('confirmationTime').textContent = "Waktu: " + now.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Sembunyikan form, tampilkan konfirmasi
+                    document.getElementById('formSection').style.display = 'none';
+                    document.getElementById('confirmationSection').style.display = 'block';
+                })
+                .catch((error) => {
+                    showError('Error menyimpan data: ' + error.message);
+                });
+        });
+
+        // Fungsi untuk kembali ke form
+        document.getElementById('backButton').addEventListener('click', function() {
+            document.getElementById('formSection').style.display = 'block';
+            document.getElementById('confirmationSection').style.display = 'none';
+            document.getElementById('name').value = '';
+            document.getElementById('class').value = '';
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        });
+
+        // Fungsi untuk menampilkan pesan sukses
+        function showSuccess() {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'flex';
+            
+            // Sembunyikan pesan error jika sedang ditampilkan
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Sembunyikan pesan sukses setelah 3 detik
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Fungsi untuk menampilkan pesan error
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.querySelector('span').textContent = message;
+            errorMessage.style.display = 'flex';
+            
+            // Sembunyikan pesan sukses jika sedang ditampilkan
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Sembunyikan pesan error setelah 5 detik
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Memuat data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+        });
+    </script>
+</body>
+</html>
