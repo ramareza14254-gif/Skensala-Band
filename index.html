@@ -35,6 +35,7 @@
             padding: 25px;
             background: linear-gradient(135deg, #1a73e8 0%, #6c5ce7 100%);
             color: white;
+            position: relative;
         }
         
         h1 {
@@ -46,6 +47,29 @@
             font-size: 1rem;
             margin-top: 10px;
             opacity: 0.9;
+        }
+        
+        .add-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            color: #1a73e8;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
         .controls {
@@ -232,6 +256,83 @@
             th, td {
                 padding: 10px;
             }
+            
+            .add-button {
+                position: static;
+                margin-top: 15px;
+                justify-content: center;
+            }
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #0d62c9;
         }
     </style>
 </head>
@@ -240,6 +341,9 @@
         <header>
             <h1><i class="fas fa-table"></i> Data Absensi Band</h1>
             <p class="description">Tabel data kehadiran latihan band</p>
+            <button class="add-button" id="addDataBtn">
+                <i class="fas fa-plus"></i> Tambah Data
+            </button>
         </header>
         
         <div class="controls">
@@ -294,6 +398,9 @@
             <i class="fas fa-inbox"></i>
             <h3>Belum ada data absensi</h3>
             <p>Data absensi akan muncul di sini setelah Anda mencatat kehadiran.</p>
+            <button class="add-button" id="addDataFromEmpty" style="margin-top: 20px;">
+                <i class="fas fa-plus"></i> Tambah Data Pertama
+            </button>
         </div>
         
         <div class="pagination">
@@ -305,6 +412,41 @@
         <footer>
             <p>&copy; 2025 Sistem Absensi Band - Tabel Data</p>
         </footer>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="addDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tambah Data Absensi</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="attendanceForm">
+                <div class="form-group">
+                    <label for="inputName">Nama Anggota Band:</label>
+                    <input type="text" id="inputName" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputClass">Instrumen:</label>
+                    <select id="inputClass" required>
+                        <option value="">Pilih instrumen</option>
+                        <option value="Gitar Utama">Gitar Utama</option>
+                        <option value="Gitar Rhythm">Gitar Rhythm</option>
+                        <option value="Bass">Bass</option>
+                        <option value="Drum">Drum</option>
+                        <option value="Keyboard">Keyboard</option>
+                        <option value="Vokal">Vokal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputDate">Tanggal:</label>
+                    <input type="date" id="inputDate" required>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Simpan Data
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Firebase App (core Firebase SDK) -->
@@ -347,6 +489,11 @@
         const prevPageButton = document.getElementById('prevPage');
         const nextPageButton = document.getElementById('nextPage');
         const pageInfoElement = document.getElementById('pageInfo');
+        const addDataBtn = document.getElementById('addDataBtn');
+        const addDataFromEmpty = document.getElementById('addDataFromEmpty');
+        const modal = document.getElementById('addDataModal');
+        const closeBtn = document.querySelector('.close');
+        const attendanceForm = document.getElementById('attendanceForm');
 
         // Fungsi untuk memuat data dari Firestore
         function loadAttendanceData() {
@@ -522,6 +669,19 @@
             errorElement.style.display = 'flex';
         }
 
+        // Fungsi untuk membuka modal
+        function openModal() {
+            // Set nilai default untuk input tanggal
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            modal.style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup modal
+        function closeModal() {
+            modal.style.display = 'none';
+            attendanceForm.reset();
+        }
+
         // Event listeners
         searchInput.addEventListener('input', applyFilters);
         dateFilter.addEventListener('change', applyFilters);
@@ -568,8 +728,64 @@
             });
         });
 
+        // Event listeners untuk modal
+        addDataBtn.addEventListener('click', openModal);
+        addDataFromEmpty.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        
+        // Tutup modal ketika klik di luar modal
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Handle form submission
+        attendanceForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('inputName').value.trim();
+            const classValue = document.getElementById('inputClass').value;
+            const dateValue = document.getElementById('inputDate').value;
+            
+            if (!name || !classValue || !dateValue) {
+                alert('Harap isi semua field');
+                return;
+            }
+            
+            const now = new Date();
+            const attendanceData = {
+                name: name,
+                class: classValue,
+                date: dateValue,
+                timestamp: now,
+                dateString: new Date(dateValue).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+            };
+            
+            // Menyimpan data ke Firestore
+            db.collection('attendance').add(attendanceData)
+                .then(() => {
+                    alert('Data berhasil disimpan!');
+                    closeModal();
+                    loadAttendanceData();
+                })
+                .catch((error) => {
+                    alert('Error menyimpan data: ' + error.message);
+                });
+        });
+
         // Memuat data saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', loadAttendanceData);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAttendanceData();
+            
+            // Set nilai default untuk input tanggal
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+        });
     </script>
 </body>
 </html>
