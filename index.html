@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Band - Sistem Kehadiran</title>
+    <title>Data Absensi Band - Tabel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -17,16 +18,12 @@
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
         
         .container {
-            max-width: 500px;
-            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
             background-color: white;
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
@@ -45,37 +42,34 @@
             margin-bottom: 10px;
         }
         
-        .date-display {
+        .description {
             font-size: 1rem;
             margin-top: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
+            opacity: 0.9;
         }
         
-        .attendance-form {
-            padding: 25px;
+        .controls {
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eaeaea;
         }
         
-        .form-group {
-            margin-bottom: 20px;
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2d3436;
-        }
-        
-        input[type="text"], input[type="date"], select {
-            width: 100%;
-            padding: 12px 15px;
+        input, select, button {
+            padding: 10px 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            font-size: 14px;
         }
         
         input:focus, select:focus {
@@ -88,16 +82,12 @@
             background-color: #1a73e8;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
             font-weight: 600;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            width: 100%;
+            gap: 8px;
         }
         
         button:hover {
@@ -106,94 +96,161 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        button i {
-            margin-right: 8px;
+        .btn-secondary {
+            background-color: #6c757d;
         }
         
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 12px;
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        th {
+            background-color: #f1f5f9;
+            color: #2d3436;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+        }
+        
+        th:hover {
+            background-color: #e5e9f0;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .present {
+            background-color: #e3f2ed;
+            color: #0abb92;
+        }
+        
+        .absent {
+            background-color: #ffebee;
+            color: #ff4d4f;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #d32f2f;
+            padding: 15px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin: 20px;
             display: none;
             align-items: center;
+            gap: 10px;
         }
         
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: none;
-            align-items: center;
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
         }
         
-        .message-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
+        .pagination button {
+            padding: 8px 15px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
         }
         
         footer {
             text-align: center;
-            margin-top: 30px;
+            padding: 20px;
             color: #666;
             font-size: 0.9rem;
-            padding: 20px;
+            border-top: 1px solid #eaeaea;
         }
         
-        .confirmation {
-            text-align: center;
-            padding: 20px;
-            display: none;
-        }
-        
-        .confirmation i {
-            font-size: 3rem;
-            color: #1a73e8;
-            margin-bottom: 15px;
-        }
-        
-        .confirmation h3 {
-            margin-bottom: 10px;
-            color: #2d3436;
-        }
-        
-        .confirmation p {
-            color: #636e72;
-            margin-bottom: 5px;
-        }
-        
-        .back-button {
-            margin-top: 20px;
-            background-color: #636e72;
-        }
-        
-        .back-button:hover {
-            background-color: #2d3436;
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-drum"></i> Absensi Band</h1>
-            <p>Sistem Pencatatan Kehadiran Latihan</p>
-            <div class="date-display" id="currentDate"></div>
+            <h1><i class="fas fa-table"></i> Data Absensi Band</h1>
+            <p class="description">Tabel data kehadiran latihan band</p>
         </header>
         
-        <section class="attendance-form" id="formSection">
-            <h2><i class="fas fa-clipboard-check"></i> Form Absensi</h2>
-            <div class="form-group">
-                <label for="name">Nama Anggota Band:</label>
-                <input type="text" id="name" placeholder="Masukkan nama lengkap" required>
-            </div>
-            <div class="form-group">
-                <label for="class">Kelas/Instrumen:</label>
-                <select id="class" required>
-                    <option value="">Pilih kelas/instrumen</option>
+        <div class="controls">
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Cari nama atau instrumen...">
+                <select id="dateFilter">
+                    <option value="">Semua Tanggal</option>
+                    <!-- Options akan diisi oleh JavaScript -->
+                </select>
+                <select id="instrumentFilter">
+                    <option value="">Semua Instrumen</option>
                     <option value="Gitar Utama">Gitar Utama</option>
                     <option value="Gitar Rhythm">Gitar Rhythm</option>
                     <option value="Bass">Bass</option>
@@ -202,37 +259,51 @@
                     <option value="Vokal">Vokal</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="date">Tanggal Kehadiran:</label>
-                <input type="date" id="date" required>
-            </div>
-            <button id="submitAttendance">
-                <i class="fas fa-paper-plane"></i> Absen Sekarang
-            </button>
-            <div class="success-message" id="successMessage">
-                <i class="fas fa-check-circle message-icon"></i>
-                <span>Absensi berhasil dicatat!</span>
-            </div>
-            <div class="error-message" id="errorMessage">
-                <i class="fas fa-exclamation-circle message-icon"></i>
-                <span>Terjadi kesalahan. Silakan coba lagi.</span>
-            </div>
-        </section>
+            <button id="refreshData"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
         
-        <section class="confirmation" id="confirmationSection">
-            <i class="fas fa-check-circle"></i>
-            <h3>Absensi Berhasil!</h3>
-            <p id="confirmationName"></p>
-            <p id="confirmationClass"></p>
-            <p id="confirmationDate"></p>
-            <p id="confirmationTime"></p>
-            <button class="back-button" id="backButton">
-                <i class="fas fa-arrow-left"></i> Kembali ke Form Absensi
-            </button>
-        </section>
+        <div id="errorMessage" class="error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Terjadi kesalahan saat memuat data.</span>
+        </div>
+        
+        <div class="table-container">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th data-sort="name">Nama <i class="fas fa-sort"></i></th>
+                        <th data-sort="class">Instrumen <i class="fas fa-sort"></i></th>
+                        <th data-sort="dateString">Tanggal <i class="fas fa-sort"></i></th>
+                        <th data-sort="timestamp">Waktu <i class="fas fa-sort"></i></th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data akan diisi oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Memuat data absensi...</p>
+        </div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-inbox"></i>
+            <h3>Belum ada data absensi</h3>
+            <p>Data absensi akan muncul di sini setelah Anda mencatat kehadiran.</p>
+        </div>
+        
+        <div class="pagination">
+            <button id="prevPage" class="btn-secondary"><i class="fas fa-chevron-left"></i> Sebelumnya</button>
+            <span id="pageInfo" style="padding: 10px;">Halaman 1</span>
+            <button id="nextPage">Selanjutnya <i class="fas fa-chevron-right"></i></button>
+        </div>
         
         <footer>
-            <p>&copy; 2025 Sistem Absensi Band</p>
+            <p>&copy; 2025 Sistem Absensi Band - Tabel Data</p>
         </footer>
     </div>
 
@@ -256,126 +327,249 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Fungsi untuk menampilkan tanggal dan waktu terkini
-        function updateDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', options);
+        // Variabel global untuk data dan pagination
+        let allAttendanceData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let sortField = 'timestamp';
+        let sortDirection = 'desc';
+
+        // Elemen UI
+        const tableBody = document.getElementById('tableBody');
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.getElementById('errorMessage');
+        const emptyStateElement = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const dateFilter = document.getElementById('dateFilter');
+        const instrumentFilter = document.getElementById('instrumentFilter');
+        const refreshButton = document.getElementById('refreshData');
+        const prevPageButton = document.getElementById('prevPage');
+        const nextPageButton = document.getElementById('nextPage');
+        const pageInfoElement = document.getElementById('pageInfo');
+
+        // Fungsi untuk memuat data dari Firestore
+        function loadAttendanceData() {
+            loadingElement.style.display = 'block';
+            errorElement.style.display = 'none';
+            emptyStateElement.style.display = 'none';
             
-            // Set nilai default untuk input tanggal
-            const today = now.toISOString().split('T')[0];
-            document.getElementById('date').value = today;
+            db.collection('attendance').orderBy('timestamp', 'desc').get()
+                .then((querySnapshot) => {
+                    allAttendanceData = [];
+                    const dateSet = new Set();
+                    
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        allAttendanceData.push(data);
+                        
+                        // Kumpulkan tanggal unik untuk filter
+                        if (data.date) {
+                            dateSet.add(data.date);
+                        }
+                    });
+                    
+                    // Isi dropdown filter tanggal
+                    dateFilter.innerHTML = '<option value="">Semua Tanggal</option>';
+                    const sortedDates = Array.from(dateSet).sort((a, b) => new Date(b) - new Date(a));
+                    sortedDates.forEach(date => {
+                        const option = document.createElement('option');
+                        option.value = date;
+                        option.textContent = new Date(date).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        dateFilter.appendChild(option);
+                    });
+                    
+                    applyFilters();
+                    loadingElement.style.display = 'none';
+                    
+                    if (allAttendanceData.length === 0) {
+                        emptyStateElement.style.display = 'block';
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading data: ", error);
+                    showError('Gagal memuat data: ' + error.message);
+                    loadingElement.style.display = 'none';
+                });
         }
 
-        // Memperbarui tanggal setiap menit
-        updateDateTime();
-        setInterval(updateDateTime, 60000);
+        // Fungsi untuk menerapkan filter
+        function applyFilters() {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedDate = dateFilter.value;
+            const selectedInstrument = instrumentFilter.value;
+            
+            filteredData = allAttendanceData.filter(item => {
+                const matchesSearch = item.name?.toLowerCase().includes(searchText) || 
+                                     item.class?.toLowerCase().includes(searchText);
+                const matchesDate = !selectedDate || item.date === selectedDate;
+                const matchesInstrument = !selectedInstrument || item.class === selectedInstrument;
+                
+                return matchesSearch && matchesDate && matchesInstrument;
+            });
+            
+            // Urutkan data
+            sortData();
+            
+            // Reset ke halaman pertama
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
 
-        // Fungsi untuk menyimpan data absensi ke Firebase
-        document.getElementById('submitAttendance').addEventListener('click', function() {
-            const name = document.getElementById('name').value.trim();
-            const classValue = document.getElementById('class').value;
-            const dateValue = document.getElementById('date').value;
+        // Fungsi untuk mengurutkan data
+        function sortData() {
+            filteredData.sort((a, b) => {
+                let valueA, valueB;
+                
+                if (sortField === 'timestamp') {
+                    valueA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+                    valueB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+                } else if (sortField === 'dateString') {
+                    valueA = a.date ? new Date(a.date) : new Date(0);
+                    valueB = b.date ? new Date(b.date) : new Date(0);
+                } else {
+                    valueA = a[sortField] || '';
+                    valueB = b[sortField] || '';
+                }
+                
+                if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+                if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+                
+                if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // Fungsi untuk merender tabel
+        function renderTable() {
+            tableBody.innerHTML = '';
             
-            if (!name) {
-                showError('Nama harus diisi');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            if (pageData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" style="text-align: center;">Tidak ada data yang sesuai dengan filter</td>`;
+                tableBody.appendChild(row);
                 return;
             }
             
-            if (!classValue) {
-                showError('Kelas/instrumen harus dipilih');
-                return;
-            }
-            
-            if (!dateValue) {
-                showError('Tanggal kehadiran harus diisi');
-                return;
-            }
-            
-            const now = new Date();
-            const attendanceData = {
-                name: name,
-                class: classValue,
-                date: dateValue,
-                timestamp: now,
-                dateString: new Date(dateValue).toLocaleDateString('id-ID', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })
-            };
-            
-            // Menyimpan data ke Firestore
-            db.collection('attendance').add(attendanceData)
-                .then(() => {
-                    // Tampilkan konfirmasi
-                    document.getElementById('confirmationName').textContent = "Nama: " + name;
-                    document.getElementById('confirmationClass').textContent = "Kelas: " + classValue;
-                    document.getElementById('confirmationDate').textContent = "Tanggal: " + attendanceData.dateString;
-                    document.getElementById('confirmationTime').textContent = "Waktu: " + now.toLocaleTimeString('id-ID', {
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Format waktu
+                let timeString = '';
+                if (item.timestamp) {
+                    const timestamp = item.timestamp.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+                    timeString = timestamp.toLocaleTimeString('id-ID', {
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                    
-                    // Sembunyikan form, tampilkan konfirmasi
-                    document.getElementById('formSection').style.display = 'none';
-                    document.getElementById('confirmationSection').style.display = 'block';
-                })
-                .catch((error) => {
-                    showError('Error menyimpan data: ' + error.message);
-                });
-        });
-
-        // Fungsi untuk kembali ke form
-        document.getElementById('backButton').addEventListener('click', function() {
-            document.getElementById('formSection').style.display = 'block';
-            document.getElementById('confirmationSection').style.display = 'none';
-            document.getElementById('name').value = '';
-            document.getElementById('class').value = '';
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        });
-
-        // Fungsi untuk menampilkan pesan sukses
-        function showSuccess() {
-            const successMessage = document.getElementById('successMessage');
-            successMessage.style.display = 'flex';
-            
-            // Sembunyikan pesan error jika sedang ditampilkan
-            document.getElementById('errorMessage').style.display = 'none';
-            
-            // Sembunyikan pesan sukses setelah 3 detik
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 3000);
+                }
+                
+                row.innerHTML = `
+                    <td>${item.name || '-'}</td>
+                    <td>${item.class || '-'}</td>
+                    <td>${item.dateString || (item.date ? new Date(item.date).toLocaleDateString('id-ID') : '-')}</td>
+                    <td>${timeString}</td>
+                    <td><span class="status present">Hadir</span></td>
+                    <td>
+                        <button class="btn-secondary" onclick="deleteRecord('${item.id}')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
         }
 
-        // Fungsi untuk menampilkan pesan error
+        // Fungsi untuk memperbarui tampilan pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            pageInfoElement.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+            prevPageButton.disabled = currentPage === 1;
+            nextPageButton.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // Fungsi untuk menghapus record
+        function deleteRecord(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data absensi ini?')) {
+                db.collection('attendance').doc(id).delete()
+                    .then(() => {
+                        alert('Data berhasil dihapus');
+                        loadAttendanceData();
+                    })
+                    .catch((error) => {
+                        showError('Gagal menghapus data: ' + error.message);
+                    });
+            }
+        }
+
+        // Fungsi untuk menampilkan error
         function showError(message) {
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.querySelector('span').textContent = message;
-            errorMessage.style.display = 'flex';
-            
-            // Sembunyikan pesan sukses jika sedang ditampilkan
-            document.getElementById('successMessage').style.display = 'none';
-            
-            // Sembunyikan pesan error setelah 5 detik
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 5000);
+            errorElement.querySelector('span').textContent = message;
+            errorElement.style.display = 'flex';
         }
+
+        // Event listeners
+        searchInput.addEventListener('input', applyFilters);
+        dateFilter.addEventListener('change', applyFilters);
+        instrumentFilter.addEventListener('change', applyFilters);
+        refreshButton.addEventListener('click', loadAttendanceData);
+        
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        });
+        
+        nextPageButton.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        });
+        
+        // Sorting ketika header tabel diklik
+        document.querySelectorAll('th[data-sort]').forEach(header => {
+            header.addEventListener('click', () => {
+                const field = header.getAttribute('data-sort');
+                
+                if (sortField === field) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortField = field;
+                    sortDirection = 'asc';
+                }
+                
+                // Update icon sort
+                document.querySelectorAll('th i').forEach(icon => {
+                    icon.className = 'fas fa-sort';
+                });
+                
+                header.querySelector('i').className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'}`;
+                
+                applyFilters();
+            });
+        });
 
         // Memuat data saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDateTime();
-        });
+        document.addEventListener('DOMContentLoaded', loadAttendanceData);
     </script>
 </body>
 </html>
