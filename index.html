@@ -180,6 +180,16 @@
             color: #ff4d4f;
         }
         
+        .permit {
+            background-color: #fff4e5;
+            color: #ff8b1a;
+        }
+        
+        .sick {
+            background-color: #ebf5ff;
+            color: #1a8cff;
+        }
+        
         .loading {
             text-align: center;
             padding: 40px;
@@ -362,6 +372,12 @@
                     <option value="Keyboard">Keyboard</option>
                     <option value="Vokal">Vokal</option>
                 </select>
+                <select id="statusFilter">
+                    <option value="">Semua Status</option>
+                    <option value="Hadir">Hadir</option>
+                    <option value="Izin">Izin</option>
+                    <option value="Sakit">Sakit</option>
+                </select>
             </div>
             <button id="refreshData"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
@@ -379,7 +395,7 @@
                         <th data-sort="class">Instrumen <i class="fas fa-sort"></i></th>
                         <th data-sort="dateString">Tanggal <i class="fas fa-sort"></i></th>
                         <th data-sort="timestamp">Waktu <i class="fas fa-sort"></i></th>
-                        <th>Status</th>
+                        <th data-sort="status">Status <i class="fas fa-sort"></i></th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -442,6 +458,15 @@
                     <label for="inputDate">Tanggal:</label>
                     <input type="date" id="inputDate" required>
                 </div>
+                <div class="form-group">
+                    <label for="inputStatus">Status Kehadiran:</label>
+                    <select id="inputStatus" required>
+                        <option value="">Pilih status</option>
+                        <option value="Hadir">Hadir</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Sakit">Sakit</option>
+                    </select>
+                </div>
                 <button type="submit" class="submit-btn">
                     <i class="fas fa-paper-plane"></i> Simpan Data
                 </button>
@@ -485,6 +510,7 @@
         const searchInput = document.getElementById('searchInput');
         const dateFilter = document.getElementById('dateFilter');
         const instrumentFilter = document.getElementById('instrumentFilter');
+        const statusFilter = document.getElementById('statusFilter');
         const refreshButton = document.getElementById('refreshData');
         const prevPageButton = document.getElementById('prevPage');
         const nextPageButton = document.getElementById('nextPage');
@@ -551,14 +577,16 @@
             const searchText = searchInput.value.toLowerCase();
             const selectedDate = dateFilter.value;
             const selectedInstrument = instrumentFilter.value;
+            const selectedStatus = statusFilter.value;
             
             filteredData = allAttendanceData.filter(item => {
                 const matchesSearch = item.name?.toLowerCase().includes(searchText) || 
                                      item.class?.toLowerCase().includes(searchText);
                 const matchesDate = !selectedDate || item.date === selectedDate;
                 const matchesInstrument = !selectedInstrument || item.class === selectedInstrument;
+                const matchesStatus = !selectedStatus || item.status === selectedStatus;
                 
-                return matchesSearch && matchesDate && matchesInstrument;
+                return matchesSearch && matchesDate && matchesInstrument && matchesStatus;
             });
             
             // Urutkan data
@@ -595,6 +623,16 @@
             });
         }
 
+        // Fungsi untuk mendapatkan class CSS berdasarkan status
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Hadir': return 'present';
+                case 'Izin': return 'permit';
+                case 'Sakit': return 'sick';
+                default: return 'absent';
+            }
+        }
+
         // Fungsi untuk merender tabel
         function renderTable() {
             tableBody.innerHTML = '';
@@ -623,12 +661,16 @@
                     });
                 }
                 
+                // Tentukan class status berdasarkan nilai status
+                const statusClass = getStatusClass(item.status || 'Hadir');
+                const statusText = item.status || 'Hadir';
+                
                 row.innerHTML = `
                     <td>${item.name || '-'}</td>
                     <td>${item.class || '-'}</td>
                     <td>${item.dateString || (item.date ? new Date(item.date).toLocaleDateString('id-ID') : '-')}</td>
                     <td>${timeString}</td>
-                    <td><span class="status present">Hadir</span></td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
                     <td>
                         <button class="btn-secondary" onclick="deleteRecord('${item.id}')" title="Hapus">
                             <i class="fas fa-trash"></i>
@@ -673,6 +715,8 @@
         function openModal() {
             // Set nilai default untuk input tanggal
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            // Set nilai default untuk status
+            document.getElementById('inputStatus').value = 'Hadir';
             modal.style.display = 'flex';
         }
 
@@ -686,6 +730,7 @@
         searchInput.addEventListener('input', applyFilters);
         dateFilter.addEventListener('change', applyFilters);
         instrumentFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
         refreshButton.addEventListener('click', loadAttendanceData);
         
         prevPageButton.addEventListener('click', () => {
@@ -747,8 +792,9 @@
             const name = document.getElementById('inputName').value.trim();
             const classValue = document.getElementById('inputClass').value;
             const dateValue = document.getElementById('inputDate').value;
+            const statusValue = document.getElementById('inputStatus').value;
             
-            if (!name || !classValue || !dateValue) {
+            if (!name || !classValue || !dateValue || !statusValue) {
                 alert('Harap isi semua field');
                 return;
             }
@@ -758,6 +804,7 @@
                 name: name,
                 class: classValue,
                 date: dateValue,
+                status: statusValue,
                 timestamp: now,
                 dateString: new Date(dateValue).toLocaleDateString('id-ID', {
                     weekday: 'long',
