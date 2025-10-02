@@ -128,32 +128,6 @@
             background-color: #5a6268;
         }
         
-        .btn-edit {
-            background-color: #28a745;
-        }
-        
-        .btn-edit:hover {
-            background-color: #218838;
-        }
-        
-        .btn-delete {
-            background-color: #dc3545;
-        }
-        
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .action-buttons button {
-            padding: 8px 12px;
-            font-size: 0.85rem;
-        }
-        
         .table-container {
             overflow-x: auto;
             padding: 20px;
@@ -204,16 +178,6 @@
         .absent {
             background-color: #ffebee;
             color: #ff4d4f;
-        }
-        
-        .permit {
-            background-color: #fff4e5;
-            color: #ff8b1a;
-        }
-        
-        .sick {
-            background-color: #ebf5ff;
-            color: #1a8cff;
         }
         
         .loading {
@@ -298,10 +262,6 @@
                 margin-top: 15px;
                 justify-content: center;
             }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
         }
         
         /* Modal styles */
@@ -350,7 +310,7 @@
             font-weight: 600;
         }
         
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -375,34 +335,8 @@
             background-color: #0d62c9;
         }
         
-        .confirmation-modal {
+        .reason-field {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .confirmation-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-        
-        .confirmation-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
         }
     </style>
 </head>
@@ -435,8 +369,7 @@
                 <select id="statusFilter">
                     <option value="">Semua Status</option>
                     <option value="Hadir">Hadir</option>
-                    <option value="Izin">Izin</option>
-                    <option value="Sakit">Sakit</option>
+                    <option value="Tidak Hadir">Tidak Hadir</option>
                 </select>
             </div>
             <button id="refreshData"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -456,7 +389,7 @@
                         <th data-sort="dateString">Tanggal <i class="fas fa-sort"></i></th>
                         <th data-sort="timestamp">Waktu <i class="fas fa-sort"></i></th>
                         <th data-sort="status">Status <i class="fas fa-sort"></i></th>
-                        <th>Aksi</th>
+                        <th data-sort="reason">Alasan <i class="fas fa-sort"></i></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -490,7 +423,7 @@
         </footer>
     </div>
 
-    <!-- Modal Form untuk Tambah/Edit Data -->
+    <!-- Modal Form untuk Tambah Data -->
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -498,7 +431,6 @@
                 <span class="close">&times;</span>
             </div>
             <form id="attendanceForm">
-                <input type="hidden" id="editId">
                 <div class="form-group">
                     <label for="inputName">Nama Anggota Band:</label>
                     <input type="text" id="inputName" placeholder="Masukkan nama lengkap" required>
@@ -524,26 +456,17 @@
                     <select id="inputStatus" required>
                         <option value="">Pilih status</option>
                         <option value="Hadir">Hadir</option>
-                        <option value="Izin">Izin</option>
-                        <option value="Sakit">Sakit</option>
+                        <option value="Tidak Hadir">Tidak Hadir</option>
                     </select>
+                </div>
+                <div class="form-group reason-field" id="reasonField">
+                    <label for="inputReason">Alasan Ketidakhadiran:</label>
+                    <textarea id="inputReason" placeholder="Masukkan alasan ketidakhadiran" rows="3"></textarea>
                 </div>
                 <button type="submit" class="submit-btn">
                     <i class="fas fa-paper-plane"></i> <span id="submitBtnText">Simpan Data</span>
                 </button>
             </form>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Hapus -->
-    <div id="deleteConfirmationModal" class="confirmation-modal">
-        <div class="confirmation-content">
-            <h3>Konfirmasi Hapus</h3>
-            <p>Apakah Anda yakin ingin menghapus data absensi ini?</p>
-            <div class="confirmation-buttons">
-                <button id="confirmDelete" class="btn-delete">Ya, Hapus</button>
-                <button id="cancelDelete" class="btn-secondary">Batal</button>
-            </div>
         </div>
     </div>
 
@@ -574,7 +497,6 @@
         const itemsPerPage = 10;
         let sortField = 'timestamp';
         let sortDirection = 'desc';
-        let recordToDelete = null;
 
         // Elemen UI
         const tableBody = document.getElementById('tableBody');
@@ -595,11 +517,10 @@
         const modalTitle = document.getElementById('modalTitle');
         const closeBtn = document.querySelector('.close');
         const attendanceForm = document.getElementById('attendanceForm');
-        const editIdInput = document.getElementById('editId');
         const submitBtnText = document.getElementById('submitBtnText');
-        const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
-        const confirmDeleteBtn = document.getElementById('confirmDelete');
-        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const statusSelect = document.getElementById('inputStatus');
+        const reasonField = document.getElementById('reasonField');
+        const reasonInput = document.getElementById('inputReason');
 
         // Fungsi untuk memuat data dari Firestore
         function loadAttendanceData() {
@@ -707,8 +628,7 @@
         function getStatusClass(status) {
             switch(status) {
                 case 'Hadir': return 'present';
-                case 'Izin': return 'permit';
-                case 'Sakit': return 'sick';
+                case 'Tidak Hadir': return 'absent';
                 default: return 'absent';
             }
         }
@@ -751,16 +671,7 @@
                     <td>${item.dateString || (item.date ? new Date(item.date).toLocaleDateString('id-ID') : '-')}</td>
                     <td>${timeString}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-edit" onclick="editRecord('${item.id}')" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-delete" onclick="confirmDelete('${item.id}')" title="Hapus">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
+                    <td>${item.reason || '-'}</td>
                 `;
                 
                 tableBody.appendChild(row);
@@ -780,31 +691,14 @@
         function openAddModal() {
             modalTitle.textContent = 'Tambah Data Absensi';
             submitBtnText.textContent = 'Simpan Data';
-            editIdInput.value = '';
             
             // Set nilai default untuk input
             document.getElementById('inputName').value = '';
             document.getElementById('inputClass').value = '';
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('inputStatus').value = 'Hadir';
-            
-            modal.style.display = 'flex';
-        }
-
-        // Fungsi untuk membuka modal edit data
-        function editRecord(id) {
-            const record = allAttendanceData.find(item => item.id === id);
-            if (!record) return;
-            
-            modalTitle.textContent = 'Edit Data Absensi';
-            submitBtnText.textContent = 'Update Data';
-            editIdInput.value = id;
-            
-            // Isi form dengan data yang ada
-            document.getElementById('inputName').value = record.name || '';
-            document.getElementById('inputClass').value = record.class || '';
-            document.getElementById('inputDate').value = record.date || '';
-            document.getElementById('inputStatus').value = record.status || 'Hadir';
+            document.getElementById('inputReason').value = '';
+            reasonField.style.display = 'none';
             
             modal.style.display = 'flex';
         }
@@ -813,34 +707,7 @@
         function closeModal() {
             modal.style.display = 'none';
             attendanceForm.reset();
-        }
-
-        // Fungsi untuk menampilkan konfirmasi hapus
-        function confirmDelete(id) {
-            recordToDelete = id;
-            deleteConfirmationModal.style.display = 'flex';
-        }
-
-        // Fungsi untuk menghapus record
-        function deleteRecord() {
-            if (!recordToDelete) return;
-            
-            db.collection('attendance').doc(recordToDelete).delete()
-                .then(() => {
-                    alert('Data berhasil dihapus');
-                    loadAttendanceData();
-                    closeDeleteModal();
-                })
-                .catch((error) => {
-                    showError('Gagal menghapus data: ' + error.message);
-                    closeDeleteModal();
-                });
-        }
-
-        // Fungsi untuk menutup modal konfirmasi hapus
-        function closeDeleteModal() {
-            deleteConfirmationModal.style.display = 'none';
-            recordToDelete = null;
+            reasonField.style.display = 'none';
         }
 
         // Fungsi untuk menampilkan error
@@ -901,19 +768,23 @@
         addDataFromEmpty.addEventListener('click', openAddModal);
         closeBtn.addEventListener('click', closeModal);
         
+        // Event listener untuk menampilkan/menyembunyikan field alasan
+        statusSelect.addEventListener('change', function() {
+            if (this.value === 'Tidak Hadir') {
+                reasonField.style.display = 'block';
+                reasonInput.setAttribute('required', 'required');
+            } else {
+                reasonField.style.display = 'none';
+                reasonInput.removeAttribute('required');
+            }
+        });
+        
         // Tutup modal ketika klik di luar modal
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 closeModal();
             }
-            if (event.target === deleteConfirmationModal) {
-                closeDeleteModal();
-            }
         });
-
-        // Event listeners untuk modal konfirmasi hapus
-        confirmDeleteBtn.addEventListener('click', deleteRecord);
-        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
 
         // Handle form submission
         attendanceForm.addEventListener('submit', (e) => {
@@ -923,10 +794,15 @@
             const classValue = document.getElementById('inputClass').value;
             const dateValue = document.getElementById('inputDate').value;
             const statusValue = document.getElementById('inputStatus').value;
-            const editId = editIdInput.value;
+            const reasonValue = document.getElementById('inputReason').value.trim();
             
             if (!name || !classValue || !dateValue || !statusValue) {
-                alert('Harap isi semua field');
+                alert('Harap isi semua field yang wajib');
+                return;
+            }
+            
+            if (statusValue === 'Tidak Hadir' && !reasonValue) {
+                alert('Harap isi alasan ketidakhadiran');
                 return;
             }
             
@@ -936,6 +812,7 @@
                 class: classValue,
                 date: dateValue,
                 status: statusValue,
+                reason: statusValue === 'Tidak Hadir' ? reasonValue : '',
                 timestamp: now,
                 dateString: new Date(dateValue).toLocaleDateString('id-ID', {
                     weekday: 'long',
@@ -945,29 +822,16 @@
                 })
             };
             
-            if (editId) {
-                // Update data yang sudah ada
-                db.collection('attendance').doc(editId).update(attendanceData)
-                    .then(() => {
-                        alert('Data berhasil diupdate!');
-                        closeModal();
-                        loadAttendanceData();
-                    })
-                    .catch((error) => {
-                        alert('Error mengupdate data: ' + error.message);
-                    });
-            } else {
-                // Tambah data baru
-                db.collection('attendance').add(attendanceData)
-                    .then(() => {
-                        alert('Data berhasil disimpan!');
-                        closeModal();
-                        loadAttendanceData();
-                    })
-                    .catch((error) => {
-                        alert('Error menyimpan data: ' + error.message);
-                    });
-            }
+            // Tambah data baru
+            db.collection('attendance').add(attendanceData)
+                .then(() => {
+                    alert('Data berhasil disimpan!');
+                    closeModal();
+                    loadAttendanceData();
+                })
+                .catch((error) => {
+                    alert('Error menyimpan data: ' + error.message);
+                });
         });
 
         // Memuat data saat halaman dimuat
